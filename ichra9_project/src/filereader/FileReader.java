@@ -22,15 +22,25 @@ public class FileReader {
             Matcher m;
             boolean ifmatch;
             while ((line = reader.readLine()) != null) {
-            	p = Pattern.compile("#*\\(*\\)");
+            	/* reg exp result
+            	 * first group is table name
+            	 * second group fields name
+            	 */
+            	String currentTablename;
+            	String currentFiledsList;
+            	p = Pattern.compile("#(\\w+)\\((.*)\\)");
             	m = p.matcher(line);
             	ifmatch = m.matches();
+            	System.out.println(line);
             	if(ifmatch) {
-            	    for(int i=0; i <= m.groupCount(); i++) {
-            	        System.out.println("Groupe " + i + " : " + m.group(i));
-            	    }
+            		currentTablename = m.group(1);
+            		currentFiledsList = m.group(2);
+            		System.out.println("table name: "+currentTablename);
+            		System.out.println("table fields list: "+currentFiledsList);
+
             	}
             	else{
+            		System.out.println("Values List: "+line);
             		p = Pattern.compile(",");
             		String[] items = p.split(line);
             	    for(int i=0; i <= (items.length-1); i++) {
