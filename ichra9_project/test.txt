@@ -1,0 +1,9 @@
+#table1(champs1,champs2,champs3)
+value1,value2,value3
+value1,value2,value3
+value1,value2,value3
+
+#table2(champs1,champs2,champs3)
+value1,value2,value3
+value1,value2,value3
+value1,value2,value3
