@@ -15,15 +15,21 @@ public class FileReader {
 	public static void main(String[] args) throws IOException {
 
 		Path source = Paths.get("test.txt", args);
+		DataBaseWrapper dbwrapper = null;
 		try {
 			BufferedReader reader = Files.newBufferedReader(source, StandardCharsets.UTF_8);
 			String line = null;
 			Pattern p;
 			Matcher m;
 			boolean ifmatch;
+			dbwrapper = new DataBaseWrapper();
+			int currentLineNumber = 0;
+			Table currentTable = new Table();
 			while ((line = reader.readLine()) != null) {
-
-				Table currentTable = new Table();
+				currentLineNumber++;
+				if(line.isEmpty()){ //separation between tables
+					continue;
+				}
 				/* reg exp result
 				 * first group is table name
 				 * second group fields name
@@ -31,28 +37,40 @@ public class FileReader {
 				p = Pattern.compile("#(\\w+)\\((.*)\\)");
 				m = p.matcher(line);
 				ifmatch = m.matches();
-				System.out.println(line);
 				p = Pattern.compile(",");
 				if(ifmatch) {
-					currentTable.UpdateValues(m.group(1), m.group(2), p.split(m.group(2)), (p.split(m.group(2)).length - 1));
-					System.out.println("table name: "+currentTable.getTableName());
-					System.out.println("table fields list: "+currentTable.getBrutFieldList());
+					currentTable.UpdateValues(m.group(1), m.group(2), p.split(m.group(2)), p.split(m.group(2)).length);
+					if(dbwrapper != null){
+						dbwrapper.createTable(currentTable.getTableName(), currentTable.getSeparatedFieldList());
+					}
 				}
 				else{
-					System.out.println("Values List: "+line);
+					String valuesListQuery = "";
 					String[] items = p.split(line);
-					if((items.length - 1) != currentTable.getFielsCounts()) {
-						System.out.println("Error fiels number not respected");
+					if(items.length != currentTable.getFielsCounts()) {
+						System.out.println("Syntax error in line "+currentLineNumber);
 					}
 					else{
-						for(int i=0; i <= (items.length-1); i++) {
-							System.out.println("Value " + i + " : " + items[i]);
-						}	
+						for(int i=0; i < items.length; i++) {
+							if(i==0){
+								valuesListQuery = valuesListQuery+"'"+items[i]+"'";
+							}
+							else{
+								valuesListQuery = valuesListQuery+",'"+items[i]+"'";
+							}
+						}
+						if(dbwrapper != null){
+							dbwrapper.insertValues(currentTable.getTableName(), currentTable.getBrutFieldList(), valuesListQuery);
+						}
 					}
 				}
 			}
 		} catch (IOException x) {
 			x.printStackTrace();
+		} finally {
+			if(dbwrapper != null){
+				dbwrapper.confCleanUp();
+			}
 		}
 	}
 
